@@ -20,7 +20,23 @@ def __ContentStringChecker(parameter):
         return False
     return True
 
-# TODO: can be dynamic configuration
+def __CurrencyChecker(parameter):
+    if parameter == None:
+        return False
+    if not parameter.isupper():
+        return False
+    if len(parameter) > 5:
+        return False
+    return True
+
+def __FloatNumberChecker(parameter):
+    try:
+        float(parameter)
+    except ValueError:
+        return False
+    return True
+
+# TODO: can be a dynamic configuration
 
 apis = {
     "CreateProject" : {
@@ -37,6 +53,51 @@ apis = {
         }
     },
     "CreateEntity" : {
+        "parameters" : {
+            "ProjectId" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "EntityId" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "DisplayName" : {
+                "TypeChecker" : __ContentStringChecker,
+            },
+            "Currency" : {
+                "TypeChecker" : __CurrencyChecker,
+            },
+            "Balance" : {
+                "TypeChecker" : __FloatNumberChecker,
+            },
+            "Remark" : {
+                "TypeChecker" : __ContentStringChecker,
+            },
+        }
+    },
+    "CreateLog" : {
+        "parameters" : {
+            "ProjectId" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "LogId" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "EntityOut" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "EntityIn" : {
+                "TypeChecker" : __TitleStringChecker,
+            },
+            "Amount" : {
+                "TypeChecker" : __FloatNumberChecker,
+            },
+            "Tag" : {
+                "TypeChecker" : __ContentStringChecker,
+            },
+            "Remark" : {
+                "TypeChecker" : __ContentStringChecker,
+            },
+        }
     },
 }
 

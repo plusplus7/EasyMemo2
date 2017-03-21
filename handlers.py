@@ -21,8 +21,31 @@ class ApiServiceHandler(tornado.web.RequestHandler):
             parameters["Remark"],
         )
 
+    def create_entity(storage, parameters):
+        return storage.CreateEntity(
+            parameters["ProjectId"],
+            parameters["EntityId"],
+            parameters["DisplayName"],
+            parameters["Currency"],
+            float(parameters["Balance"]),
+            parameters["Remark"],
+        )
+
+    def create_log(storage, parameters):
+        return storage.CreateLog(
+            parameters["ProjectId"],
+            parameters["LogId"],
+            parameters["EntityOut"],
+            parameters["EntityIn"],
+            float(parameters["Amount"]),
+            parameters["Tag"],
+            parameters["Remark"],
+        )
+
     __apis      = {
         "CreateProject" : create_project,
+        "CreateEntity"  : create_entity,
+        "CreateLog"     : create_log,
     }
 
     def get(self, action):
