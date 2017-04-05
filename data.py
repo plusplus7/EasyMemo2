@@ -27,6 +27,9 @@ class LocalJsonStorage:
     def logPath(self, projectId, logId):
         return '/projects/%s/logs/%s.json' % (projectId, logId)
 
+    def userPath(self, userId):
+        return '/users/%s' % (userId, )
+
     def checkProjectExistence(self, projectId):
         if self.r.exists(self.projectPath(projectId)):
             return True
@@ -42,6 +45,11 @@ class LocalJsonStorage:
             return True
         return False
 
+    def checkUserExistence(self, userId):
+        if self.r.exists(self.userPath(userId)):
+            return True
+        return False
+
     def SetProject(self, projectId, projectInfo):
         self.r.set(self.projectPath(projectId), projectInfo)
 
@@ -50,6 +58,9 @@ class LocalJsonStorage:
 
     def SetLog(self, projectId, logId, logInfo):
         self.r.set(self.logPath(projectId, logId), logInfo)
+
+    def SetUser(self, userId, userInfo):
+        self.r.set(self.userPath(userId), userInfo)
 
     def CreateProject(self, projectId, displayName, remark):
         if self.checkProjectExistence(projectId):
@@ -92,6 +103,14 @@ class LocalJsonStorage:
             "Amount"    : amount,
             "Tag"       : tag,
             "Remark"    : remark,
+        })
+
+    def CreateUser(self, userId, displayName, email):
+
+        self.SetUser(userId, {
+            "UserId"        : userId,
+            "DisplayName"   : displayName,
+            "Email"         : email,
         })
 
 if __name__ == "__main__":

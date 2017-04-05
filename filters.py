@@ -126,7 +126,6 @@ def ParameterTypeFilter(action, handler):
 
     for param in apis[action]["parameters"].keys():
         value = handler.get_argument(param)
-        print param
         if not apis[action]["parameters"][param]["TypeChecker"](handler.get_argument(param)):
             return errors.InvalidParameter
         context["parameters"][param] = value
