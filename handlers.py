@@ -1,5 +1,6 @@
 import tornado.web
 import filters
+import errors
 import uuid
 import data
 import json
@@ -42,10 +43,21 @@ class ApiServiceHandler(tornado.web.RequestHandler):
             parameters["Remark"],
         )
 
+    def register_user(storage, parameters):
+        if parameters["VerificationCode"] != "00000000-0000-0000-0000-000000000000":
+            return errors.OperationFailed
+
+        return storage.CreateUser(
+            parameters["EmailAddress"],
+            parameters["NickName"],
+            parameters["Secret"]
+        )
+
     __apis      = {
         "CreateProject" : create_project,
         "CreateEntity"  : create_entity,
         "CreateLog"     : create_log,
+        "RegisterUser"  : register_user,
     }
 
     def get(self, action):

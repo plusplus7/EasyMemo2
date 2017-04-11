@@ -1,7 +1,19 @@
 <div ng-controller="mainCtrl">
-    <div ng-show="mainShow">
+    <div ng-show="user.isAuthenticated()">
         <div class="container">
             <div ng-include="'./javascript/app/components/content/userinfoView.html'"></div>
+        </div>
+    </div>
+    <div ng-show="!user.isAuthenticated()">
+        <div ng-show="!user.isSigningUp()">
+            <div class="container">
+                <div ng-include="'./javascript/app/components/content/loginView.html'"></div>
+            </div>
+        </div>
+        <div ng-show="user.isSigningUp()">
+            <div class="container">
+                <div ng-include="'./javascript/app/components/content/registerView.html'"></div>
+            </div>
         </div>
     </div>
 </div>

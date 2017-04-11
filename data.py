@@ -105,12 +105,12 @@ class LocalJsonStorage:
             "Remark"    : remark,
         })
 
-    def CreateUser(self, userId, displayName, email):
+    def CreateUser(self, userId, displayName, secret):
 
         self.SetUser(userId, {
             "UserId"        : userId,
             "DisplayName"   : displayName,
-            "Email"         : email,
+            "Secret"        : secret,
         })
 
 if __name__ == "__main__":

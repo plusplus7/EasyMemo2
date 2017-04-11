@@ -1,3 +1,3 @@
-app.controller("mainCtrl", function($scope) {
-    $scope.mainShow = true;
+app.controller("mainCtrl", function($scope, user) {
+    $scope.user = user;
 });

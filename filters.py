@@ -1,6 +1,7 @@
 import errors
 import uuid
 from tornado.web import MissingArgumentError
+from email.utils import parseaddr
 
 def __TitleStringChecker(parameter):
     if parameter == None:
@@ -8,6 +9,25 @@ def __TitleStringChecker(parameter):
     if not parameter.isalnum():
         return False
     if len(parameter) > 17:
+        return False
+    return True
+
+def __PasswordStringChecker(parameter):
+    if parameter == None:
+        return False
+    if not parameter.isalnum():
+        return False
+    if len(parameter) > 32:
+        return False
+    return True
+
+def __EmailStringChecker(parameter):
+    return '@' in parseaddr(parameter)[1]
+
+def __UUIDStringChecker(parameter):
+    try:
+        val = uuid.UUID(parameter, version=4)
+    except ValueError:
         return False
     return True
 
@@ -99,6 +119,22 @@ apis = {
             },
         }
     },
+    "RegisterUser" : {
+        "parameters" : {
+            "EmailAddress" : {
+                "TypeChecker" : __EmailStringChecker,
+            },
+            "NickName" : {
+                "TypeChecker" : __ContentStringChecker,
+            },
+            "Secret" : {
+                "TypeChecker" : __PasswordStringChecker,
+            },
+            "VerificationCode" : {
+                "TypeChecker" : __UUIDStringChecker,
+            },
+        }
+    }
 }
 
 def CreateContextFilter(action, handler):
