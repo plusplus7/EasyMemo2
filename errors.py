@@ -1,6 +1,6 @@
-ActionNotSupported  = {"code": 403, "message": "ActionNotSupported" }
-ParameterNotExists  = {"code": 400, "message": "ParameterNotExists" }
-InvalidParameter    = {"code": 400, "message": "InvalidParameter"   }
-OperationFailed     = {"code": 402, "message": "OperationFailed"    }
-EntityAlreadyExists = {"code": 401, "message": "EntityAlreadyExists"}
-EntityNotExists     = {"code": 401, "message": "EntityNotExists"    }
+ActionNotSupported  = {"Code": 403, "Message": "ActionNotSupported" }
+ParameterNotExists  = {"Code": 400, "Message": "ParameterNotExists" }
+InvalidParameter    = {"Code": 400, "Message": "InvalidParameter"   }
+OperationFailed     = {"Code": 402, "Message": "OperationFailed"    }
+EntityAlreadyExists = {"Code": 401, "Message": "EntityAlreadyExists"}
+EntityNotExists     = {"Code": 401, "Message": "EntityNotExists"    }

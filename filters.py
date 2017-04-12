@@ -17,11 +17,13 @@ def __PasswordStringChecker(parameter):
         return False
     if not parameter.isalnum():
         return False
-    if len(parameter) > 32:
+    if len(parameter) > 64:
         return False
     return True
 
 def __EmailStringChecker(parameter):
+    if len(parameter) > 32:
+        return False
     return '@' in parseaddr(parameter)[1]
 
 def __UUIDStringChecker(parameter):

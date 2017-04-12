@@ -1,4 +1,4 @@
-app.factory('api', function($http, $httpParamSerializer) {
+app.factory('api', function($http, $httpParamSerializer, crypto) {
     var api = {
         invoke  : function(url, params) {
             var promise = $http({
@@ -23,6 +23,23 @@ app.factory('api', function($http, $httpParamSerializer) {
             return {
                 UserId : "BillyLiu",
                 UserDisplayName : "Billy Liu"
+            }
+        },
+        RegisterUser : function(email, password, passwordConfirmed, verificationCode) {
+            var param = {
+                "EmailAddress"      : email,
+                "NickName"          : email.split('@')[0],
+                "VerificationCode"  : verificationCode
+            };
+            if (password === passwordConfirmed) {
+                if (email.length <= 32) {
+                    param["Secret"] = crypto.hmacsha256(email, password).toString();
+                    return this.invoke("/api/RegisterUser", param);
+                } else {
+                    alert('The length of e-mail address is too long ( greater than 32 letters).')
+                }
+            } else {
+                alert('Passwords are required to be the same!')
             }
         }
     };

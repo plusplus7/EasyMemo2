@@ -14,6 +14,8 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class ApiServiceHandler(tornado.web.RequestHandler):
     __filters   = [filters.CreateContextFilter, filters.ParameterExistenceFilter, filters.ParameterTypeFilter]
+    # TODO: should be some other way to do it
+    __verifies = ["00000000-0000-0000-0000-000000000000"]
 
     def create_project(storage, parameters):
         return storage.CreateProject(
@@ -44,8 +46,12 @@ class ApiServiceHandler(tornado.web.RequestHandler):
         )
 
     def register_user(storage, parameters):
-        if parameters["VerificationCode"] != "00000000-0000-0000-0000-000000000000":
+        if parameters["VerificationCode"] not in ApiServiceHandler.__verifies:
             return errors.OperationFailed
+
+        ApiServiceHandler.__verifies.remove(parameters["VerificationCode"])
+        ApiServiceHandler.__verifies.append(str(uuid.uuid4()))
+        print ApiServiceHandler.__verifies
 
         return storage.CreateUser(
             parameters["EmailAddress"],
@@ -60,7 +66,7 @@ class ApiServiceHandler(tornado.web.RequestHandler):
         "RegisterUser"  : register_user,
     }
 
-    def get(self, action):
+    def post(self, action):
         for filter in self.__filters:
             res = filter(action, self)
             if res != None:
@@ -77,6 +83,7 @@ class ApiServiceHandler(tornado.web.RequestHandler):
         if res == None:
             res = {}
         res["RequestId"] = self.mcontext["requestId"]
+        res["Code"] = 200
         self.write(json.dumps(res))
 
 class AboutHandler(tornado.web.RequestHandler):
