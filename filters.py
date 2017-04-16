@@ -1,7 +1,13 @@
 import errors
 import uuid
+import utils
 from tornado.web import MissingArgumentError
 from email.utils import parseaddr
+import data
+import time
+
+factory = data.DataFactory()
+storage = factory.create("local", '/tmp/easymemo2.redis.sock')
 
 def __TitleStringChecker(parameter):
     if parameter == None:
@@ -9,6 +15,13 @@ def __TitleStringChecker(parameter):
     if not parameter.isalnum():
         return False
     if len(parameter) > 17:
+        return False
+    return True
+
+def __CredentialStringChecker(parameter):
+    if parameter == None:
+        return False
+    if len(parameter) > 200:
         return False
     return True
 
@@ -63,15 +76,18 @@ def __FloatNumberChecker(parameter):
 apis = {
     "CreateProject" : {
         "parameters" : {
-            "ProjectId" : {
-                "TypeChecker" : __TitleStringChecker,
-            },
             "DisplayName" : {
                 "TypeChecker" : __ContentStringChecker,
             },
             "Remark" : {
                 "TypeChecker" : __ContentStringChecker,
             },
+            "CredentialId" : {
+                "TypeChecker" : __CredentialStringChecker,
+            },
+            "Signature" : {
+                "TypeChecker" : __CredentialStringChecker,
+            }
         }
     },
     "CreateEntity" : {
@@ -136,6 +152,29 @@ apis = {
                 "TypeChecker" : __UUIDStringChecker,
             },
         }
+    },
+    "VerifyUser" : {
+        "parameters" : {
+            "EmailAddress" : {
+                "TypeChecker" : __EmailStringChecker,
+            },
+            "CredentialId" : {
+                "TypeChecker" : __CredentialStringChecker,
+            },
+        }
+    },
+    "GetUserInfo" : {
+        "parameters" : {
+            "EmailAddress" : {
+                "TypeChecker" : __EmailStringChecker,
+            },
+            "CredentialId" : {
+                "TypeChecker" : __CredentialStringChecker,
+            },
+            "Signature" : {
+                "TypeChecker" : __CredentialStringChecker,
+            }
+        }
     }
 }
 
@@ -168,3 +207,36 @@ def ParameterTypeFilter(action, handler):
             return errors.InvalidParameter
         context["parameters"][param] = value
     return None
+
+def AuthenticationFilter(action, handler):
+    keys = sorted(handler.mcontext["parameters"].keys())
+
+    strToSign = "" + action + "\n"
+    for param in keys:
+        if param == "CredentialId" or param == "Signature":
+            continue
+        strToSign = strToSign + param + ":" + utils.base64Encode(handler.mcontext["parameters"][param]) + "\n"
+
+    strToSign = utils.base64Encode(strToSign)
+    credentialIdB64 = handler.mcontext["parameters"]["CredentialId"]
+    info = utils.GetInfoFromCredentialId(credentialIdB64)
+    secret = storage.QueryUser(info["email"])
+    if secret in errors.errors:
+        return secret
+    secret = secret["Secret"]
+    key = utils.GenerateCredentialSecret(credentialIdB64, secret)
+    signature = utils.hmacsha256(strToSign, key)
+
+    """
+    print info["timeStart"]
+    print int(time.time()*1000)
+    print info["timeEnd"]
+    print signature
+    print handler.mcontext["parameters"]["Signature"]
+    """
+    if info["timeStart"] < int(time.time()*1000) and \
+        info["timeEnd"] > int(time.time()*1000) and \
+        signature == handler.mcontext["parameters"]["Signature"]:
+        handler.mcontext["userInfo"] = info
+        return None
+    return errors.AccessForbidden

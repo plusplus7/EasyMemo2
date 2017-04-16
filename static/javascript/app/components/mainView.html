@@ -5,7 +5,7 @@
         </div>
     </div>
     <div ng-show="!user.isAuthenticated()">
-        <div ng-show="!user.isSigningUp()">
+        <div ng-show="user.isSigningIn()">
             <div class="container">
                 <div ng-include="'./javascript/app/components/content/loginView.html'"></div>
             </div>

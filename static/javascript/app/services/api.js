@@ -19,11 +19,35 @@ app.factory('api', function($http, $httpParamSerializer, crypto) {
             );
             return promise;
         },
-        GetUserInfo : function(accessKeyId, accessKeySecret) {
-            return {
-                UserId : "BillyLiu",
-                UserDisplayName : "Billy Liu"
+        Sign : function(action, param, secret) {
+            var strToSign = "" + action + "\n";
+            var keys = [];
+            for(var key in param)
+                keys.push(key);
+            keys = keys.sort();
+            for (var i in keys) {
+                var key = keys[i];
+                strToSign = strToSign + key + ":" + crypto.base64Encode(param[key]) + "\n";
             }
+            console.log(strToSign);
+            return crypto.hmacsha256(crypto.base64Encode(strToSign), secret).toString();
+        },
+        CreateProject : function(displayName, remark, credentialId, credentialSecret) {
+            var param = {
+                "DisplayName" : displayName,
+                "Remark" : remark,
+            };
+            param["Signature"] = this.Sign("CreateProject", param, credentialSecret);
+            param["CredentialId"] = credentialId;
+            return this.invoke("/api/CreateProject", param);
+        },
+        GetUserInfo : function(email, credentialId, credentialSecret) {
+            var param = {
+                "EmailAddress" : email,
+            };
+            param["Signature"] = this.Sign("GetUserInfo", param, credentialSecret);
+            param["CredentialId"] = credentialId;
+            return this.invoke("/api/GetUserInfo", param);
         },
         RegisterUser : function(email, password, passwordConfirmed, verificationCode) {
             var param = {
@@ -36,12 +60,20 @@ app.factory('api', function($http, $httpParamSerializer, crypto) {
                     param["Secret"] = crypto.hmacsha256(email, password).toString();
                     return this.invoke("/api/RegisterUser", param);
                 } else {
-                    alert('The length of e-mail address is too long ( greater than 32 letters).')
+                    alert('The length of e-mail address is too long ( greater than 32 letters).');
                 }
             } else {
-                alert('Passwords are required to be the same!')
+                alert('Passwords are required to be the same!');
             }
+        },
+        VerifyUser : function(email, credentialId) {
+            var param = {
+                "EmailAddress" : email,
+                "CredentialId" : credentialId
+            };
+            return this.invoke("/api/VerifyUser", param);
         }
+
     };
     return api;
 });

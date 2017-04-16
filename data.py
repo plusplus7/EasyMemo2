@@ -50,27 +50,59 @@ class LocalJsonStorage:
             return True
         return False
 
-    def SetProject(self, projectId, projectInfo):
-        self.r.set(self.projectPath(projectId), projectInfo)
+    def AttachProjectToUser(self, projectId, userId):
+        if not self.checkProjectExistence(projectId):
+            return errors.EntityNotExists
+
+        if not self.checkUserExistence(userId):
+            return errors.EntityNotExists
+        project = self.getProject(projectId)
+        user = self.getUser(userId)
+        user["Projects"].append({
+            "ProjectId" : project["ProjectId"],
+            "ProjectName" : project["DisplayName"]
+        })
+        self.setUser(userId, user)
+
+    def getProject(self, projectId):
+        return json.loads(str(self.r.get(self.projectPath(projectId))))
+
+    def setProject(self, projectId, projectInfo):
+        self.r.set(self.projectPath(projectId), json.dumps(projectInfo))
 
     def SetEntity(self, projectId, entityId, entityInfo):
-        self.r.set(self.entityPath(projectId, entityId), entityInfo)
+        self.r.set(self.entityPath(projectId, entityId), json.dumps(entityInfo))
 
-    def SetLog(self, projectId, logId, logInfo):
-        self.r.set(self.logPath(projectId, logId), logInfo)
+    def setLog(self, projectId, logId, logInfo):
+        self.r.set(self.logPath(projectId, logId), json.dumps(logInfo))
 
-    def SetUser(self, userId, userInfo):
-        self.r.set(self.userPath(userId), userInfo)
+    def setUser(self, userId, userInfo):
+        self.r.set(self.userPath(userId), json.dumps(userInfo))
+
+    def getUser(self, userId):
+        return json.loads(str(self.r.get(self.userPath(userId))))
+
+    def getEntity(self, project, entityId):
+        return json.loads(str(self.r.get(self.entityPath(projectId, entityId))))
 
     def CreateProject(self, projectId, displayName, remark):
         if self.checkProjectExistence(projectId):
             return errors.EntityAlreadyExists
 
-        self.SetProject(projectId, {
+        self.setProject(projectId, {
             "ProjectId"     : projectId,
             "DisplayName"   : displayName,
             "Remark"        : remark,
         })
+
+    def QueryEntity(self, projectId, entityId):
+        if not self.checkProjectExistence(projectId):
+            return errors.EntityNotExists
+
+        if self.checkEntityExistence(projectId, entityId):
+            return errors.EntityAlreadyExists
+
+        return self.getEntity(projectId, entityId)
 
     def CreateEntity(self, projectId, entityId, displayName, currency, balance, remark):
         if not self.checkProjectExistence(projectId):
@@ -97,7 +129,7 @@ class LocalJsonStorage:
         if not self.checkEntityExistence(projectId, entityIn):
             return errors.EntityNotExists
 
-        self.SetLog(projectId, logId, {
+        self.setLog(projectId, logId, {
             "From"      : entityOut,
             "To"        : entityIn,
             "Amount"    : amount,
@@ -106,12 +138,21 @@ class LocalJsonStorage:
         })
 
     def CreateUser(self, userId, displayName, secret):
+        if self.checkUserExistence(userId):
+            return errors.EntityAlreadyExists
 
-        self.SetUser(userId, {
+        self.setUser(userId, {
             "UserId"        : userId,
             "DisplayName"   : displayName,
+            "Projects"      : [],
             "Secret"        : secret,
         })
+
+    def QueryUser(self, userId):
+        if not self.checkUserExistence(userId):
+            return errors.EntityNotExists
+
+        return self.getUser(userId)
 
 if __name__ == "__main__":
     a = LocalJsonStorage('/tmp/easymemo2.redis.sock')
